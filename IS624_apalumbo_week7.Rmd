@@ -1,0 +1,45 @@
+---
+title: "IS624 Week 7"
+author: "Aaron Palumbo"
+date: "Monday, July 20, 2015"
+output: pdf_document
+---
+
+Question 1: Plotting/Comparing Survival Curves Part I
+
+Load in the ovarian data-set:
+
+```{r}
+library(survival)
+data(ovarian)
+ovarian
+```
+
+This data is from a randomised trial comparing two treatments for ovarian cancer. Look in http://cran.r-project.org/web/packages/survival/survival.pdf, the variables are as follows:  
+
+> **futime:** survival or censoring time  
+> **fustat:** censoring status  
+> **age:** in years  
+> **resid.ds:** residual disease present (1-no, 2-yes)  
+> **rx:** treatment group  
+> **ecog.ps:** ECOG performance status (1 is better)  
+
+Compare the two treatment groups (**treatment1** versus **treatment2**). Plot the respective survival curves, indicating censored subjects. You can distinguish between the two groups using different colors or different line formats or both. Label both x- and y-axes. Add a suitable title. Also, add a legend indicating which line corresponds to which line format.
+
+Finally compar the tow survival curves (log-rank) and add a p-value to the bottom-right of the plot.
+
+HINT: You add tow or more legends to the plot; to add a legend without a border use box.col="white".
+
+You should achieve something like this:
+
+```{r}
+gr1Filter <- ovarian$rx == 1
+survG1 <- Surv(ovarian$futime[gr1Filter], ovarian$fustat[gr1Filter])
+fitG1 <- survfit(survG1 ~ 1, conf.type="none")
+
+survG2 <- Surv(ovarian$futime[-gr1Filter], ovarian$fustat[-gr1Filter])
+fitG2 <- survfit(survG2 ~ 1, conf.type="none")
+plot(fitG1)
+lines(fitG2)
+```
+
