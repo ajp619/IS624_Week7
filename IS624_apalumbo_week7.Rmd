@@ -3,16 +3,17 @@ title: "IS624 Week 7"
 author: "Aaron Palumbo"
 date: "Monday, July 20, 2015"
 output: pdf_document
+toc: true
 ---
 
-Question 1: Plotting/Comparing Survival Curves Part I
+## Question 1: Plotting/Comparing Survival Curves Part I
 
 Load in the ovarian data-set:
 
 ```{r}
 library(survival)
 data(ovarian)
-ovarian
+head(ovarian)
 ```
 
 This data is from a randomised trial comparing two treatments for ovarian cancer. Look in http://cran.r-project.org/web/packages/survival/survival.pdf, the variables are as follows:  
@@ -26,20 +27,86 @@ This data is from a randomised trial comparing two treatments for ovarian cancer
 
 Compare the two treatment groups (**treatment1** versus **treatment2**). Plot the respective survival curves, indicating censored subjects. You can distinguish between the two groups using different colors or different line formats or both. Label both x- and y-axes. Add a suitable title. Also, add a legend indicating which line corresponds to which line format.
 
-Finally compar the tow survival curves (log-rank) and add a p-value to the bottom-right of the plot.
+Finally compare the two survival curves (log-rank) and add a p-value to the bottom-right of the plot.
 
 HINT: You add tow or more legends to the plot; to add a legend without a border use box.col="white".
 
 You should achieve something like this:
 
-```{r}
-gr1Filter <- ovarian$rx == 1
-survG1 <- Surv(ovarian$futime[gr1Filter], ovarian$fustat[gr1Filter])
-fitG1 <- survfit(survG1 ~ 1, conf.type="none")
+```{r fig.height=5}
+fit <- survfit(Surv(futime, fustat)~rx, data=ovarian)
+survdiff(Surv(futime,fustat)~rx, data=ovarian)
 
-survG2 <- Surv(ovarian$futime[-gr1Filter], ovarian$fustat[-gr1Filter])
-fitG2 <- survfit(survG2 ~ 1, conf.type="none")
-plot(fitG1)
-lines(fitG2)
+plot(fit, main="OVARIAN CANCER - OVERALL SURVIVAL",
+     xlab="Time (Days)", ylab="Overall Survival Proportion", col.lab='blue',
+     col=c("red", "blue"), lty=2:3)
+legend("topright", lty=2:3, col=c("red", "blue"),
+       legend=c("Treatment Group1",
+                "Treatment Group2"))
+legend(x=800, y=.2, legend="p-value: 0.303", box.col="white")
+
 ```
+
+
+## Question 2: Plotting/Comparing Survival Curves Part
+
+Load in the Leukaemia-free survival/transplant data-set:
+
+```{r}
+library(KMsurv)
+data(alloauto)
+head(alloauto)
+```
+
+This data considers tow transplant types in relation to leukaemia-ftee survival. Look in http://cran.r-project.org/web/packages/KMsurv/KMsurv.pdf, the variables are as follows:
+
+> **Time:** Time to death or relapse, months  
+> **Type:** Type of transplant (1-allogeneic, 2-autologous)  
+> **Delta:** Leukemia-free survival indicator(0=alive withoutrelapse, 1-deador relapse)  
+
+Compare the two transplant types (**allogeneic** vs **autologous**). Plot the respective relapse-free survival curves, indicating censored subjects. You can distinguish between the two groups using different colors or different line formats or both. Label both x- and y-axes. Add a suitable title. Also, add a legend indicating which line corrresponds to which line format.
+
+Finally compare the two survival curves (log-rank) and add a p-value to the bottom-right of the plot.
+
+You should achieve somthing like this:
+
+```{r fig.height=5}
+fit <- survfit(Surv(time, delta)~type, data=alloauto)
+survdiff(Surv(time, delta)~type, data=alloauto)
+
+plot(fit, main="Leukemia - Free Survival",
+     xlab="Time (Months)", ylab="Relapse-Free Survival Proportion", col.lab='blue',
+     col=c("red", "blue"), lty=2:3)
+legend(40, 0.9, lty=2:3, col=c("red", "blue"),
+       legend=c("Allogeneic", "Autologous"), cex=0.8)
+text(30, .2, labels="p-value: 0.537", cex=0.8)
+```
+
+
+## Question 3: Developing a Cox Model
+
+Look at the hmoiv data-set again.
+
+Recode the age variables (see below) and repeat the univariate and multivariate analyses.
+
+```{r}
+library(car)
+hmohiv <- read.table("http://www.ats.ucla.edu/stat/R/examples/asa/hmohiv.csv", 
+                     sep=",", header = TRUE) 
+```
+
+### Univariate
+
+```{r}
+agecat <- recode(hmohiv$age, "20:29='D'; 30-34='B'; 35:39='C'; 40:54='A'", as.factor=TRUE)
+
+coxph(formula=Surv(time, censor)~agecat, method="efron", data=hmohiv)
+```
+
+
+
+
+
+
+
 
